@@ -1,0 +1,5 @@
+{
+  "data_path": "data/Indian_pines.mat",
+  "labels_path": "data/Indian_pines_gt.mat",
+  "seed": 42
+}
