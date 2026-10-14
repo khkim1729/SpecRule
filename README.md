@@ -13,7 +13,7 @@ Ratio = B_i / B_j
 NDSI  = (B_i - B_j) / (B_i + B_j)
 ```
 
-Small denominators are guarded, so both features remain finite. For every candidate feature and target class, SpecRule evaluates `feature <= threshold` and `feature > threshold`, selecting by positive-class F1 and then accuracy with deterministic tie-breaking.
+Small denominators are guarded, so both features remain finite. For every candidate feature and target class, SpecRule evaluates `feature <= threshold` and `feature > threshold`, including endpoint rules that predict every sample positive or negative, and selects by positive-class F1 and then accuracy with deterministic tie-breaking.
 
 ## Installation
 
@@ -43,7 +43,7 @@ specrule \
   --output-dir outputs/indian_pines
 ```
 
-The command excludes background label 0 and writes:
+The command excludes background label 0, makes a seed-controlled stratified 70/30 discovery/held-out split, and writes:
 
 - `discovered_rules.csv`: one best rule for each of the 16 labeled classes;
 - `rule_diagnostic.png`: the strongest discovered class-versus-rest rule.
@@ -52,7 +52,7 @@ A verified result snapshot is committed at [`results/discovered_rules.csv`](resu
 
 ## Interpreting the snapshot
 
-The bounded 256-pair smoke search selected a simple Band 26/Band 52 ratio for Stone-Steel-Towers with F1 0.9733 and accuracy 0.9995. This is a newly rerun repository smoke result. It is not presented as a replacement for the companion paper's larger candidate search or its reported rules.
+The bounded 256-pair smoke search selects each rule only on the 70% discovery partition. The committed CSV reports `discovery_f1`/`discovery_accuracy` separately from `heldout_f1`/`heldout_accuracy` on the untouched 30% partition. The figure ranks rules using held-out F1. These are newly rerun repository smoke results, not replacements for the companion paper's larger candidate search or its reported rules.
 
 ## Layout
 
@@ -71,6 +71,7 @@ outputs/        ignored generated artifacts
 - Candidate bands are selected deterministically across the available spectral range.
 - Search results do not depend on dictionary or filesystem order.
 - Class 0 is treated as unlabeled background and excluded from rule fitting.
+- The configured seed fixes the stratified discovery/held-out split.
 - The committed MAT files allow the documented command to run without a separate download.
 
 ## Related projects

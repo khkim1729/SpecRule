@@ -62,16 +62,25 @@ def find_best_threshold(values: np.ndarray, target: np.ndarray) -> ThresholdRule
     order = np.argsort(x, kind="mergesort")
     sorted_x = x[order]
     sorted_y = y[order]
-    boundaries = np.flatnonzero(sorted_x[:-1] < sorted_x[1:])
-    if boundaries.size == 0:
-        boundaries = np.array([x.size - 1])
-        thresholds = np.array([sorted_x[-1]])
-    else:
-        thresholds = (sorted_x[boundaries] + sorted_x[boundaries + 1]) / 2.0
+    internal_boundaries = np.flatnonzero(sorted_x[:-1] < sorted_x[1:])
+    boundaries = np.concatenate(
+        [np.array([-1]), internal_boundaries, np.array([x.size - 1])]
+    )
+    internal_thresholds = (
+        sorted_x[internal_boundaries]
+        + (sorted_x[internal_boundaries + 1] - sorted_x[internal_boundaries]) / 2.0
+    )
+    thresholds = np.concatenate(
+        [
+            np.array([np.nextafter(sorted_x[0], -np.inf)]),
+            internal_thresholds,
+            np.array([sorted_x[-1]]),
+        ]
+    )
 
-    cumulative = np.cumsum(sorted_y)
+    cumulative = np.concatenate([np.array([0]), np.cumsum(sorted_y)])
     total_positive = cumulative[-1]
-    prefix_positive = cumulative[boundaries]
+    prefix_positive = cumulative[boundaries + 1]
     prefix_size = boundaries + 1
     suffix_positive = total_positive - prefix_positive
     suffix_size = x.size - prefix_size
@@ -95,7 +104,7 @@ def find_best_threshold(values: np.ndarray, target: np.ndarray) -> ThresholdRule
         [np.zeros(thresholds.size, dtype=np.int8), np.ones(thresholds.size, dtype=np.int8)]
     )
     winner = np.lexsort(
-        (-all_thresholds, all_direction, all_accuracy, all_f1)
+        (-all_thresholds, -all_direction, all_accuracy, all_f1)
     )[-1]
     return ThresholdRule(
         float(all_thresholds[winner]),

@@ -31,6 +31,14 @@ def test_find_best_threshold_constructs_only_the_winning_rule():
     assert constructor.call_count == 1
 
 
+def test_find_best_threshold_considers_all_positive_endpoint_rule():
+    rule = find_best_threshold(np.array([0.0, 1.0, 2.0]), np.array([1, 0, 1]))
+
+    assert rule.direction == "<="
+    assert rule.threshold == 2.0
+    assert rule.f1 == 0.8
+
+
 def test_discovery_is_reproducible_and_returns_one_rule_per_nonzero_class():
     spectra = np.array(
         [[1, 4, 2], [2, 4, 1], [4, 1, 2], [5, 1, 1], [3, 2, 2]], dtype=float
